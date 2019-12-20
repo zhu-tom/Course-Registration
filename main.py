@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from findCourses import getCourses
+from findCourses import getCourses, createTimetables
 from getTerms import findTerms
 
 app = Flask(__name__)
@@ -14,7 +14,7 @@ def findCourses():
     courses = data['courses']
     term = data['term']
     print('getting courses...')
-    return jsonify(courses=getCourses(courses, term))
+    return jsonify(courses=createTimetables(getCourses(courses, term)))
 
 @app.route('/getTerms', methods=['POST'])
 def getTerms():
