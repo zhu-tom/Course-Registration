@@ -3,12 +3,14 @@ from bs4 import BeautifulSoup
 from findProfs import findProf
 
 def product(lis):
+    if lis == []:
+        return 1
     if len(lis) == 1:
         return lis[0]
     return lis[0] * product(lis[1:])
 
 def checkTimetable(timetable):
-    times = [set(range(section['time']['values'][0], section['time']['values'][1]+1)) if section != None and section['time']['values'][0] != None else None for section in timetable]
+    times = [set(range(section['time']['values'][0], section['time']['values'][1]+1)) if section != None and section['time'] != None and section['time']['values'][0] != None else None for section in timetable]
     days = [set(section['days']) if section != None else None for section in timetable]
     for a in range(len(days)):
         if days[a] != None and times[a] != None:
@@ -92,13 +94,14 @@ def findCourse(code, term):
     infoKey = {1:'days', 2:'time', 3:'building', 4:'room'}
     daysKey = {'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6}
     sections = []
+    extras = []
     lastColour = ''
 
     for j in range(len(rows)):
         currColour = rows[j]['bgcolor']
         if lastColour != currColour:
             lastColour = currColour
-            section = {}
+            section = {'code': code}
             
             cols = rows[j].findAll('td')
             for i in range(len(cols)):
@@ -115,16 +118,30 @@ def findCourse(code, term):
                         section[infoKey[i]] = None
                     if i == 1:
                         section['days'] = [daysKey[day] if day != '' else None for day in section['days'].strip().split(' ')]
-                    elif i == 2:
+                    elif i == 2 and section['time'] != None:
                         section['time'] = {'display': section['time'], 'values': [int(''.join(time.split(":"))) if time != '' else None for time in section['time'].split(' - ')]}
-
-            if len(section['section']) > 1:
-                for i in range(len(sections)):
-                    if sections[i]['section'] == section['section'][0]:
-                        sections[i]['additional'].append(section)
-            else:
-                section['additional'] = []
-                sections.append(section)
-    return sections
             
+            alsoRegIn = rows[j+2].findAll('td')[1].find('b')
+            if alsoRegIn.text == 'Also Register in:':
+                extraCourses = alsoRegIn.next_sibling.strip().replace(code[:4] + ' ' + code[4:], '').split(' or ')
+                extraCourses[0] = extraCourses[0].strip()
+                section['extras'] = extraCourses
+            else:
+                section['extras'] = None
 
+            sections.append(section)
+
+    new = []
+    copy = sections[:]
+    for section in sections:
+        section['additional'] = []
+        if len(section['section']) == 1:
+            new.append(section)
+            copy.remove(section)
+ 
+    for section in new:
+        for extra in copy:
+            if section['section'] in extra['extras']:
+                section['additional'].append(extra)
+
+    return new
