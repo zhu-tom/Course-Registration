@@ -74,6 +74,10 @@ codeRow = "<div class='row form-group'>\
             </div>"
 delbtn = "<input type='button' style='width:100%' class='btn btn-danger del-course' value='Delete'>"
 $(document).ready(function(e) {
+    for (let i = 8; i <= 21; i++) {
+        $('#timetable').append('<tr id="'+ i + '"><th scope="col">' + i + ':00' + '</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
+        $('#timetable').append('<tr id="'+ (i+0.5) + '"><th scope="col">' + i + ':30' + '</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
+    }
     $.ajax({
         url: '/getTerms',
         type: 'POST',
@@ -97,12 +101,14 @@ $(document).ready(function(e) {
     $('#submit').on('click', (event) => {
         if ($('#term').val() === null) {
             $('#term').addClass('is-invalid');
-            return;
+            return null;
         }
 
         courses = [];
         for (input of $('input[name=course]')) {
-            courses.push($(input).val());
+            if ($(input).val() != '') {
+                courses.push($(input).val());
+            }
         }
 
         data = {courses: courses, term: $('#term').val()}
@@ -113,10 +119,6 @@ $(document).ready(function(e) {
             data: JSON.stringify(data),
             success: (result) => {
                 console.log(result);
-                for (let i = 8; i <= 21; i++) {
-                    $('#timetable').append('<tr><th scope="col">' + i + '</th></tr>');
-                    $('#timetable').append('<tr><th scope="col">' + (i+0.5) + '</th></tr>');
-                }
             }
         });
     });
