@@ -12,12 +12,18 @@
             color: white;
         }
         tbody tr {
-            height: 30px;
+            height: 25px;
         }
         td h6, p {
             margin: 0;
             padding: 0;
             border: 0;
+        }
+        td h6 {
+            font-size:1em;
+        }
+        .small {
+            font-size: 0.7em;
         }
         .time {
             font-weight: normal;
@@ -56,8 +62,23 @@
                 </div>
             </div>
             <div class='form-row form-group'>
+                <div class='col-2'>
+                    <label class='form-label'>Filters</label>
+                </div>
                 <div class='col'>
-                    <input type='button' id='submit' value='Submit' class='btn btn-success'>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="noEarly" value="option1">
+                        <label class="form-check-label" for="noEarly">No 8:35am Classes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="noLate" value="option2">
+                        <label class="form-check-label" for="noLate">No 8:55pm Classes</label>
+                    </div>
+                </div>
+            </div>
+            <div class='form-row form-group'>
+                <div class='col'>
+                    <input type='button' id='submit' value='Search' class='btn btn-success'>
                 </div>
             </div>
         </form>
@@ -119,6 +140,7 @@ codeRow = "<div class='row form-group'>\
                 </div>\
             </div>"
 delbtn = "<input type='button' style='width:100%' class='btn btn-danger del-course' value='Delete'>"
+
 function loadTimetable() {
     $('#timetable').text('');
     $('#timetable').append('<tr id="7.5"><th class="time align-middle text-right" rowspan="2" scope="col">8:00</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
@@ -126,6 +148,8 @@ function loadTimetable() {
         $('#timetable').append('<tr id="'+ i + '"><th class="time align-middle text-right" style="display:none" scope="col"></th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
         $('#timetable').append('<tr id="'+ (i+0.5) + '"><th class="time align-middle text-right" rowspan="2" scope="col">' + (i+1) + ':00' + '</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
     }
+    $('#timetable').append('<tr id="22"><th class="time align-middle text-right" style="display:none" scope="col"></th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
+
 }
 
 var timetables = null;
@@ -229,7 +253,7 @@ $(document).ready(function(e) {
             }
         }
 
-        data = {courses: courses, term: $('#term').val()}
+        data = {courses: courses, term: $('#term').val(), noEarly: $('#noEarly').prop('checked'), noLate: $('#noLate').prop('checked')}
         $.ajax({
             url: '/findCourses',
             type: 'POST',

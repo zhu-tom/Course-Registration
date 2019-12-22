@@ -73,10 +73,10 @@ def createTimetables(courses):
                 timetable = []
     return validTimetables
 
-def getCourses(codes, term):
-    return [findCourse(code, term) for code in codes]
+def getCourses(codes, term, noEarly, noLate):
+    return [findCourse(code, term, noEarly, noLate) for code in codes]
 
-def findCourse(code, term):
+def findCourse(code, term, noEarly, noLate):
     browser = mechanicalsoup.StatefulBrowser()
     browser.open("https://central.carleton.ca/prod/bwysched.p_select_term?wsea_code=EXT")
     browser.select_form('form[action="bwysched.p_search_fields"]')
@@ -110,6 +110,7 @@ def findCourse(code, term):
                     if i == 10:
                         section['prof'] = {'name': section['prof'], 'ratings': findProf(section['prof'])}
             info = rows[j+1].findAll('td')[1].findAll('b')
+            badTime = False
             for i in range(len(info)):
                 if i in infoKey.keys():
                     if info[i].next_sibling != None:
@@ -120,7 +121,13 @@ def findCourse(code, term):
                         section['days'] = [daysKey[day] if day != '' else None for day in section['days'].strip().split(' ')]
                     elif i == 2 and section['time'] != None:
                         section['time'] = {'display': section['time'], 'values': [int(''.join(time.split(":"))) if time != '' else None for time in section['time'].split(' - ')]}
-            
+                        if section['time']['values'] != [None]:
+                            if (noEarly and section['time']['values'][0] == 835) or (noLate and section['time']['values'][1] == 2055):
+                                badTime = True
+                                break
+            if badTime:
+                continue
+
             alsoRegIn = rows[j+2].findAll('td')[1].find('b')
             if alsoRegIn.text == 'Also Register in:':
                 extraCourses = alsoRegIn.next_sibling.strip().replace(code[:4] + ' ' + code[4:], '').split(' or ')
