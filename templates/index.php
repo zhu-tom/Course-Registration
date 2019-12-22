@@ -107,7 +107,12 @@
             <div class='col'>
             </div>
         </div>
-        <table class="table-sm table table-bordered">
+        <div class="d-flex justify-content-center">
+            <div id='spinner' class="spinner-border" style='display:none' role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <table id='weekly' class="table-sm table table-bordered">
             <thead>
                 <tr>
                     <th class='text-center' style='width:60px' cope="col">Time</th>
@@ -157,15 +162,11 @@ var count = 0;
 
 function loadPage(pageNum) {
     $('#page').val(pageNum+1);
-    console.log($('#page'));
     result = timetables;
     loadTimetable();
     colours = ['#CC0000', '#FF8800', '#007E33', '#0099CC', '#00695c', '#0d47a1', '#9933CC', '#1C2331', '#3e2723', '#880e4f']
     rows = $('#timetable').find('tr');
-    if (result['courses'][pageNum] === null) {
-        alert('No Timetables Found');
-        return;
-    }
+    
     for (lecture of result['courses'][pageNum]) {
         if (lecture != null) {
             startTime = lecture.time.values[0];
@@ -237,7 +238,6 @@ $(document).ready(function(e) {
         else if (count >= timetables.courses.length) {
             count = 0;
         }
-        console.log(count);
         loadPage(count);
     });
     $('#submit').on('click', (event) => {
@@ -259,11 +259,23 @@ $(document).ready(function(e) {
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(data),
+            beforeSend: () => {
+                $('#spinner').css('display', 'block');
+                $('#weekly').css('display', 'none');
+            },
             success: (result) => {
                 console.log(result);
                 $('#totPages').text('of ' + result.courses.length);
                 timetables = result;
+                if (result['courses'].length === 0) {
+                    alert('No Timetables Found');
+                    return;
+                }
                 loadPage(0);
+            },
+            complete: () => {
+                $('#spinner').css('display', 'none');
+                $('#weekly').css('display', 'table');
             }
         });
     });
