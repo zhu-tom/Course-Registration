@@ -73,10 +73,10 @@ def createTimetables(courses):
                 timetable = []
     return validTimetables
 
-def getCourses(codes, term, noEarly, noLate):
-    return [findCourse(code, term, noEarly, noLate) for code in codes]
+def getCourses(codes, term, noEarly, noLate, openOnly):
+    return [findCourse(code, term, noEarly, noLate, openOnly) for code in codes]
 
-def findCourse(code, term, noEarly, noLate):
+def findCourse(code, term, noEarly, noLate, openOnly):
     browser = mechanicalsoup.StatefulBrowser()
     browser.open("https://central.carleton.ca/prod/bwysched.p_select_term?wsea_code=EXT")
     browser.select_form('form[action="bwysched.p_search_fields"]')
@@ -84,12 +84,15 @@ def findCourse(code, term, noEarly, noLate):
     response = browser.submit_selected()
 
     browser.select_form('form[action="bwysched.p_course_search"]')
-    browser.get_current_form().set_select({'sel_subj':code[:4]})
+    form = browser.get_current_form()
+    form.set_select({'sel_subj':code[:4]})
+    form.set_select({'sel_special':'O'}) if openOnly else None
     browser['sel_number'] = code[4:]
     response = browser.submit_selected()
     html = browser.get_current_page()
     rows = html.find('form', {'action':"bwysched.p_list_sections_chk"}).find('table').findAll('tr')[4].find('td').find('div').find('table').findAll('tr')
 
+    buildingAbbrev = {'Architecture Building': 'AA', 'Athletics': 'AC', 'Alumni Hall': 'AH', 'Azrieli Pavilion': 'AP', 'ARISE Building': 'AR'}
     key = {1:'status', 2:'crn', 4:'section', 7:'type', 10:'prof'}
     infoKey = {1:'days', 2:'time', 3:'building', 4:'room'}
     daysKey = {'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6}
@@ -104,11 +107,18 @@ def findCourse(code, term, noEarly, noLate):
             section = {'code': code}
             
             cols = rows[j].findAll('td')
+            classFull = False
             for i in range(len(cols)):
                 if i in key.keys():
                     section[key[i]] = cols[i].text.strip()
                     if i == 10:
                         section['prof'] = {'name': section['prof'], 'ratings': findProf(section['prof'])}
+                    elif i == 1 and openOnly and section['status'] != 'Open': 
+                        classFull = True
+                        break
+            if classFull:
+                continue
+            
             info = rows[j+1].findAll('td')[1].findAll('b')
             badTime = False
             for i in range(len(info)):

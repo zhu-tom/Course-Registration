@@ -15,11 +15,13 @@ def findCourses():
     term = data['term']
     noEarly = data['noEarly']
     noLate = data['noLate']
+    openOnly = data['openOnly']
     print('getting courses...')
-    return jsonify(courses=createTimetables(getCourses(courses, term, noEarly, noLate)))
+    return jsonify(courses=createTimetables(getCourses(courses, term, noEarly, noLate, openOnly)))
 
 @app.route('/getTerms', methods=['POST'])
 def getTerms():
+    print('finding terms...')
     return jsonify(terms=findTerms())
     
 

@@ -68,11 +68,15 @@
                 <div class='col'>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="noEarly" value="option1">
-                        <label class="form-check-label" for="noEarly">No 8:35am Classes</label>
+                        <label class="form-check-label" for="noEarly">No 8:35am Starts</label>
                     </div>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="noLate" value="option2">
-                        <label class="form-check-label" for="noLate">No 8:55pm Classes</label>
+                        <label class="form-check-label" for="noLate">No 8:55pm Endings</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="openOnly" value="option3">
+                        <label class="form-check-label" for="openOnly">Open Classes Only</label>
                     </div>
                 </div>
             </div>
@@ -82,22 +86,23 @@
                 </div>
             </div>
         </form>
+        <hr/>
         <div class='row'>
             <div class='col-3'>
-                <nav aria-label="Page navigation example">
+                <nav aria-label="Page navigation">
                     <ul class="pagination">
                         <li class="page-item">
-                        <a class="page-link" aria-label="Previous">
-                            <span aria-hidden="true" aria-label='Previous'>&laquo;</span>
-                            <span class="sr-only">Previous</span>
-                        </a>
+                            <a class="page-link" aria-label="Previous">
+                                <span aria-hidden="true" aria-label='Previous'>&laquo;</span>
+                                <span class="sr-only">Previous</span>
+                            </a>
                         </li>
                         <input type='number' id='page'>
                         <li class="page-item">
-                        <a class="page-link" aria-label="Next">
-                            <span aria-hidden="true" aria-label='Next'>&raquo;</span>
-                            <span class="sr-only">Next</span>
-                        </a>
+                            <a class="page-link" aria-label="Next">
+                                <span aria-hidden="true" aria-label='Next'>&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
                         </li>
                     </ul>
                 </nav>
@@ -111,6 +116,9 @@
             <div id='spinner' class="spinner-border" style='display:none' role="status">
                 <span class="sr-only">Loading...</span>
             </div>
+        </div>
+        <div id='currClasses' class="btn-group" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-outline-primary" data-toggle="button" aria-pressed="false">Class 1</button>
         </div>
         <table id='weekly' class="table-sm table table-bordered">
             <thead>
@@ -146,7 +154,8 @@ codeRow = "<div class='row form-group'>\
             </div>"
 delbtn = "<input type='button' style='width:100%' class='btn btn-danger del-course' value='Delete'>"
 
-function loadTimetable() {
+
+function loadTimetable() { // loads timetable template
     $('#timetable').text('');
     $('#timetable').append('<tr id="7.5"><th class="time align-middle text-right" rowspan="2" scope="col">8:00</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
     for (let i = 8; i <= 21; i++) {
@@ -160,7 +169,7 @@ function loadTimetable() {
 var timetables = null;
 var count = 0;
 
-function loadPage(pageNum) {
+function loadPage(pageNum) { // fills timetable wit courses
     $('#page').val(pageNum+1);
     result = timetables;
     loadTimetable();
@@ -205,11 +214,11 @@ $(document).ready(function(e) {
         type: 'POST',
         contentType: 'application/json',
         success: (result) => {
-           for (el of result.terms) {
-               $('#term').append(el);
-           }
-           $($('#term').children()[1]).removeAttr('selected');
-           $('#term').val('');
+            for (el of result.terms) {
+                $('#term').append(el);
+            }
+            $($('#term').children()[1]).removeAttr('selected');
+            $('#term').val('');
         }
     });
     $(document).on('click', '.add-course', (e) => {
@@ -253,7 +262,7 @@ $(document).ready(function(e) {
             }
         }
 
-        data = {courses: courses, term: $('#term').val(), noEarly: $('#noEarly').prop('checked'), noLate: $('#noLate').prop('checked')}
+        data = {courses: courses, term: $('#term').val(), noEarly: $('#noEarly').prop('checked'), noLate: $('#noLate').prop('checked'), openOnly: $('#openOnly').prop('checked')}
         $.ajax({
             url: '/findCourses',
             type: 'POST',
@@ -276,6 +285,9 @@ $(document).ready(function(e) {
             complete: () => {
                 $('#spinner').css('display', 'none');
                 $('#weekly').css('display', 'table');
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+                alert(textStatus);
             }
         });
     });
