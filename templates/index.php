@@ -87,7 +87,12 @@
             </div>
         </form>
         <hr/>
-        <div class='row'>
+        <div class="d-flex justify-content-center">
+            <div id='spinner' class="spinner-border" style='display:none' role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div class='row' id='pageNav'>
             <div class='col-3'>
                 <nav aria-label="Page navigation">
                     <ul class="pagination">
@@ -110,11 +115,6 @@
             <div class='col-2 align-middle text-left' id='totPages'>
             </div>
             <div class='col'>
-            </div>
-        </div>
-        <div class="d-flex justify-content-center">
-            <div id='spinner' class="spinner-border" style='display:none' role="status">
-                <span class="sr-only">Loading...</span>
             </div>
         </div>
         <div id='currClasses' class="btn-group" role="group" aria-label="Basic example">
@@ -199,7 +199,7 @@ function loadPage(pageNum) { // fills timetable wit courses
                 .attr('rowspan', rowspan)
                 .attr('id', lecture.code+lecture.section)
                 .css('background-color', colour)
-                .append('<h6>' + lecture.code + lecture.section + '</h6><p class="small">' + lecture.time.display + ' (' + lecture.crn + ')' + '</p><p class="small prof">'+ lecture.prof.name + (lecture.prof.ratings.overall_rating ? ' (' + lecture.prof.ratings.overall_rating + ')' : '') +'</p>');
+                .append('<h6 style="display: inline;">' + lecture.code + lecture.section + '</h6>' + (lecture.building.abbrev ?  ' <p style="display: inline; font-size: 0.8rem;" data-placement="top" data-toggle="tooltip" title="' + lecture.building.name + '">(' + lecture.building.abbrev + ')</p>' : '') + '<p class="small">' + lecture.time.display + ' (' + lecture.crn + ')' + '</p><p class="small prof">'+ lecture.prof.name + (lecture.prof.ratings.overall_rating ? ' (' + lecture.prof.ratings.overall_rating + ')' : '') +'</p>');
             }
         }
         
@@ -271,6 +271,7 @@ $(document).ready(function(e) {
             beforeSend: () => {
                 $('#spinner').css('display', 'block');
                 $('#weekly').css('display', 'none');
+                $('#pageNav').css('display', 'none')
             },
             success: (result) => {
                 console.log(result);
@@ -285,6 +286,7 @@ $(document).ready(function(e) {
             complete: () => {
                 $('#spinner').css('display', 'none');
                 $('#weekly').css('display', 'table');
+                $('#pageNav').css('display', 'flex');
             },
             error: (jqXHR, textStatus, errorThrown) => {
                 alert(textStatus);

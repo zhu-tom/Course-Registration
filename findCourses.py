@@ -92,7 +92,7 @@ def findCourse(code, term, noEarly, noLate, openOnly):
     html = browser.get_current_page()
     rows = html.find('form', {'action':"bwysched.p_list_sections_chk"}).find('table').findAll('tr')[4].find('td').find('div').find('table').findAll('tr')
 
-    buildingAbbrev = {'Architecture Building': 'AA', 'Athletics': 'AC', 'Alumni Hall': 'AH', 'Azrieli Pavilion': 'AP', 'ARISE Building': 'AR'}
+    buildingAbbrev = {'AlgonC AdvancedTechnologyCtr': 'ATC', 'Architecture Building': 'AA', 'Athletics': 'AC', 'Alumni Hall': 'AH', 'Azrieli Pavilion': 'AP', 'ARISE Building': 'AR', 'Azrieli Theatre':'AT', 'Canal Building': 'CB', 'Residence Commons':'CO', 'Dominion-Chalmers Centre':'DC', 'Dunton Tower':'DT', 'Fieldhouse': 'FH', 'Gymnasium': 'GY', 'Human Computer Interaction Building': 'HC', 'Herzberg Labs for Physics': 'HP', 'Health Science Building':'HS', 'Ice House':'IH', 'Loeb Building':'LA', 'Maintenance Building':'MB', 'Minto Centre':'MC', 'Mackenzie Building':'ME', 'MacOdrum Library':'ML', 'University of Ottawa':'UO', 'Nesbitt Building':'NB', 'Nichols Building':'NI', 'National Wildlife Research Centre':'NW', 'Paterson Hall':'PA', 'Richcraft Hall':'RB','Robertson Hall':'RO','Southam Hall':'SA','Steacie Building':'SC',"St. Patrick's Building":'SP', 'Social Sciences Building':'SR', 'Tory Building':'TR', 'Technology and Training Centre':'TT','University Centre':'UC','Visualization and Simulation Building':'VS'}
     key = {1:'status', 2:'crn', 4:'section', 7:'type', 10:'prof'}
     infoKey = {1:'days', 2:'time', 3:'building', 4:'room'}
     daysKey = {'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6}
@@ -127,6 +127,7 @@ def findCourse(code, term, noEarly, noLate, openOnly):
                         section[infoKey[i]] = info[i].next_sibling.strip()
                     else:
                         section[infoKey[i]] = None
+                
                     if i == 1:
                         section['days'] = [daysKey[day] if day != '' else None for day in section['days'].strip().split(' ')]
                     elif i == 2 and section['time'] != None:
@@ -135,18 +136,25 @@ def findCourse(code, term, noEarly, noLate, openOnly):
                             if (noEarly and section['time']['values'][0] == 835) or (noLate and section['time']['values'][1] == 2055):
                                 badTime = True
                                 break
+                    elif i == 3 and section['building'] != '':
+                        print(f'Building Name: {section["building"]}')
+                        section['building'] = {'name': section['building'], 'abbrev': buildingAbbrev[section['building']]}
+
             if badTime:
                 continue
 
-            alsoRegIn = rows[j+2].findAll('td')[1].find('b')
-            if alsoRegIn.text == 'Also Register in:':
-                extraCourses = alsoRegIn.next_sibling.strip().replace(code[:4] + ' ' + code[4:], '').split(' or ')
-                extraCourses[0] = extraCourses[0].strip()
-                section['extras'] = extraCourses
-            else:
-                section['extras'] = None
+            try:
+                alsoRegIn = rows[j+2].findAll('td')[1].find('b')
+                if alsoRegIn.text == 'Also Register in:':
+                    extraCourses = alsoRegIn.next_sibling.strip().replace(code[:4] + ' ' + code[4:], '').split(' or ')
+                    extraCourses[0] = extraCourses[0].strip()
+                    section['extras'] = extraCourses
+                else:
+                    section['extras'] = None
 
-            sections.append(section)
+                sections.append(section)
+            except IndexError:
+                pass
 
     new = []
     copy = sections[:]
