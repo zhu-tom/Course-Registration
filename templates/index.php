@@ -78,6 +78,16 @@
                         <input class="form-check-input" type="checkbox" id="openOnly" value="option3">
                         <label class="form-check-label" for="openOnly">Open Classes Only</label>
                     </div>
+                    <div class="form-group">
+                        <label for="exampleFormControlSelect2">Day(s) Off</label>
+                        <select multiple class="form-control" id="daysOff">
+                            <option value="1">Monday</option>
+                            <option value="2">Tuesday</option>
+                            <option value="3">Wednesday</option>
+                            <option value="4">Thursday</option>
+                            <option value="5">Friday</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class='form-row form-group'>
@@ -117,8 +127,7 @@
             <div class='col'>
             </div>
         </div>
-        <div id='currClasses' class="btn-group" role="group" aria-label="Basic example">
-            <button type="button" class="btn btn-outline-primary" data-toggle="button" aria-pressed="false">Class 1</button>
+        <div id='currClasses' role="group" aria-label="Basic example">
         </div>
         <table id='weekly' class="table-sm table table-bordered">
             <thead>
