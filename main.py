@@ -16,8 +16,9 @@ def findCourses():
     noEarly = data['noEarly']
     noLate = data['noLate']
     openOnly = data['openOnly']
+    daysOff = {int(day) for day in data['daysOff']} if ("none" not in data['daysOff']) else set()
     print('getting courses...')
-    return jsonify(courses=createTimetables(getCourses(courses, term, noEarly, noLate, openOnly)))
+    return jsonify(courses=createTimetables(getCourses(courses, term, noEarly, noLate, openOnly, daysOff)))
 
 @app.route('/getTerms', methods=['POST'])
 def getTerms():

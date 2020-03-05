@@ -73,10 +73,10 @@ def createTimetables(courses):
                 timetable = []
     return validTimetables
 
-def getCourses(codes, term, noEarly, noLate, openOnly):
-    return [findCourse(code, term, noEarly, noLate, openOnly) for code in codes]
+def getCourses(codes, term, noEarly, noLate, openOnly, daysOff):
+    return [findCourse(code, term, noEarly, noLate, openOnly, daysOff) for code in codes]
 
-def findCourse(code, term, noEarly, noLate, openOnly):
+def findCourse(code, term, noEarly, noLate, openOnly, daysOff):
     browser = mechanicalsoup.StatefulBrowser()
     browser.open("https://central.carleton.ca/prod/bwysched.p_select_term?wsea_code=EXT")
     browser.select_form('form[action="bwysched.p_search_fields"]')
@@ -120,7 +120,7 @@ def findCourse(code, term, noEarly, noLate, openOnly):
                 continue
             
             info = rows[j+1].findAll('td')[1].findAll('b')
-            badTime = False
+            badTime, onDayOff = False, False
             for i in range(len(info)):
                 if i in infoKey.keys():
                     if info[i].next_sibling != None:
@@ -130,6 +130,9 @@ def findCourse(code, term, noEarly, noLate, openOnly):
                 
                     if i == 1:
                         section['days'] = [daysKey[day] if day != '' else None for day in section['days'].strip().split(' ')]
+                        if set(section['days']).intersection(daysOff) != set():
+                            onDayOff = True
+                            break
                     elif i == 2 and section['time'] != None:
                         section['time'] = {'display': section['time'], 'values': [int(''.join(time.split(":"))) if time != '' else None for time in section['time'].split(' - ')]}
                         if section['time']['values'] != [None]:
@@ -140,7 +143,7 @@ def findCourse(code, term, noEarly, noLate, openOnly):
                         print(f'Building Name: {section["building"]}')
                         section['building'] = {'name': section['building'], 'abbrev': buildingAbbrev[section['building']]}
 
-            if badTime:
+            if badTime or onDayOff:
                 continue
 
             try:

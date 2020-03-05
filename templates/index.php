@@ -31,9 +31,21 @@
         td {
             vertical-align: center;
         }
+        .navbar {
+            margin-bottom: 15px;
+        }
+        ul {
+            margin-bottom: 0;
+        }
+        #pageNav {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-light bg-light">
+        <span class="navbar-brand mb-0 h1">Scheduler</span>
+    </nav>
     <div class='container'>
         <form id='courses'>
             <div class='form-row form-group'>
@@ -62,37 +74,49 @@
                 </div>
             </div>
             <div class='form-row form-group'>
-                <div class='col-2'>
+                <div class='col-2 d-flex align-items-center'>
                     <label class='form-label'>Filters</label>
                 </div>
                 <div class='col'>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="noEarly" value="option1">
-                        <label class="form-check-label" for="noEarly">No 8:35am Starts</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="noLate" value="option2">
-                        <label class="form-check-label" for="noLate">No 8:55pm Endings</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="openOnly" value="option3">
-                        <label class="form-check-label" for="openOnly">Open Classes Only</label>
-                    </div>
-                    <div class="form-group">
-                        <label for="exampleFormControlSelect2">Day(s) Off</label>
-                        <select multiple class="form-control" id="daysOff">
-                            <option value="1">Monday</option>
-                            <option value="2">Tuesday</option>
-                            <option value="3">Wednesday</option>
-                            <option value="4">Thursday</option>
-                            <option value="5">Friday</option>
-                        </select>
+                    <div class='row'>
+                        <div class='col-3 border-right justify-content-center d-flex'>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="noEarly" value="option1">
+                                <label class="form-check-label" for="noEarly">No 8:35am Starts</label>
+                            </div>
+                        </div>
+                        <div class='col-3 border-right justify-content-center d-flex'>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="noLate" value="option2">
+                                <label class="form-check-label" for="noLate">No 8:55pm Endings</label>
+                            </div>
+                        </div>
+                        <div class='col-3 border-right justify-content-center d-flex'>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="openOnly" value="option3">
+                                <label class="form-check-label" for="openOnly">Open Classes Only</label>
+                            </div>
+                        </div>
+                        <div class='col-3'>
+                            <div class="form-group">
+                                <label for="exampleFormControlSelect2">Day(s) Off</label>
+                                <select multiple class="form-control" id="daysOff">
+                                    <option selected value="none">No Priority</option>
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                </select>
+                                <small id="select-help" class='form-text text-muted'>&#8984 - Click to select multiple.</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class='form-row form-group'>
-                <div class='col'>
-                    <input type='button' id='submit' value='Search' class='btn btn-success'>
+            <div class='row justify-content-center'>
+                <div class='col-4'>
+                    <input type='button' id='submit' value='Search' class='btn btn-success' style="width:100%;">
                 </div>
             </div>
         </form>
@@ -102,8 +126,8 @@
                 <span class="sr-only">Loading...</span>
             </div>
         </div>
-        <div class='row' id='pageNav'>
-            <div class='col-3'>
+        <div class='row align-items-center' id='pageNav'>
+            <div class='col-3 d-flex align-items-center'>
                 <nav aria-label="Page navigation">
                     <ul class="pagination">
                         <li class="page-item">
@@ -218,6 +242,8 @@ function loadPage(pageNum) { // fills timetable wit courses
 $(document).ready(function(e) {
     loadTimetable();
 
+    $('#select-help').text(navigator.oscpu.includes("Mac OS") ? "\u2318 - Click to select multiple.": "Ctrl - Click to select multiple");
+
     $.ajax({
         url: '/getTerms',
         type: 'POST',
@@ -262,16 +288,18 @@ $(document).ready(function(e) {
         if ($('#term').val() === null) {
             $('#term').addClass('is-invalid');
             return null;
+        } else {
+            $('#term').removeClass('is-invalid');
         }
 
         courses = [];
         for (input of $('input[name=course]')) {
             if ($(input).val() != '') {
-                courses.push($(input).val());
+                courses.push($(input).val().trim());
             }
         }
 
-        data = {courses: courses, term: $('#term').val(), noEarly: $('#noEarly').prop('checked'), noLate: $('#noLate').prop('checked'), openOnly: $('#openOnly').prop('checked')}
+        data = {courses: courses, term: $('#term').val(), noEarly: $('#noEarly').prop('checked'), noLate: $('#noLate').prop('checked'), openOnly: $('#openOnly').prop('checked'), daysOff: $('#daysOff').val()}
         $.ajax({
             url: '/findCourses',
             type: 'POST',
@@ -280,7 +308,7 @@ $(document).ready(function(e) {
             beforeSend: () => {
                 $('#spinner').css('display', 'block');
                 $('#weekly').css('display', 'none');
-                $('#pageNav').css('display', 'none')
+                $('#pageNav').css('display', 'none');
             },
             success: (result) => {
                 console.log(result);
@@ -298,9 +326,14 @@ $(document).ready(function(e) {
                 $('#pageNav').css('display', 'flex');
             },
             error: (jqXHR, textStatus, errorThrown) => {
-                alert(textStatus);
+                alert(textStatus, errorThrown);
             }
         });
+    });
+    $('option').on('click', () => {
+        if (($('#daysOff').val()).includes("none")) {
+            $('#daysOff').val(["none"]);
+        }
     });
 });
 </script>
