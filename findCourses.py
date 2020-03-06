@@ -152,12 +152,10 @@ def findCourse(code, term, noEarly, noLate, openOnly, daysOff):
                     extraCourses = alsoRegIn.next_sibling.strip().replace(code[:4] + ' ' + code[4:], '').split(' or ')
                     extraCourses[0] = extraCourses[0].strip()
                     section['extras'] = extraCourses
-                else:
-                    section['extras'] = None
-
-                sections.append(section)
             except IndexError:
-                pass
+                section['extras'] = None
+
+            sections.append(section)
 
     new = []
     copy = sections[:]
