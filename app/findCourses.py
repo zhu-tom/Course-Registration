@@ -121,6 +121,7 @@ def findCourse(code, term, noEarly, noLate, openOnly, daysOff):
             
             info = rows[j+1].findAll('td')[1].findAll('b')
             badTime, onDayOff = False, False
+            foundBuilding = False
             for i in range(len(info)):
                 if i in infoKey.keys():
                     if info[i].next_sibling != None:
@@ -140,9 +141,13 @@ def findCourse(code, term, noEarly, noLate, openOnly, daysOff):
                                 badTime = True
                                 break
                     elif i == 3 and section['building'] != '':
+                        foundBuilding = True
                         print(f'Building Name: {section["building"]}')
                         section['building'] = {'name': section['building'], 'abbrev': buildingAbbrev[section['building']]}
 
+            if not foundBuilding:
+                section['building'] = ''
+            
             if badTime or onDayOff:
                 continue
 
