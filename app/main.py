@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
-from findCourses import getCourses, createTimetables
-from getTerms import findTerms
+from app.findCourses import getCourses, createTimetables
+from app.getTerms import findTerms
 
 app = Flask(__name__)
 

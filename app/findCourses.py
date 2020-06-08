@@ -1,6 +1,6 @@
 import mechanicalsoup
 from bs4 import BeautifulSoup
-from findProfs import findProf
+from app.findProfs import findProf
 
 def product(lis):
     if lis == []:
