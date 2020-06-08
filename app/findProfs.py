@@ -1,7 +1,7 @@
 import requests
 import ast
 
-f = open('./app/profs.txt', 'r')
+f = open('./app/setUp/profs.txt', 'r')
 profs = ast.literal_eval(f.readline())
 f.close()
 

@@ -8,6 +8,7 @@ def profsToFile():
     numProfs = data['searchResultsTotal']
 
     for i in range(1, numProfs+1):
+        print(f"{i}/{numProfs+1}")
         url = f"http://www.ratemyprofessors.com/filter/professor/?&page={i}&filter=teacherlastname_sort_s+asc&query=*%3A*&queryoption=TEACHER&queryBy=schoolId&sid={schoolId}"
         data = requests.get(url).json()['professors']
         for info in data:
