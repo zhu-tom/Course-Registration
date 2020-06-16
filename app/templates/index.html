@@ -3,7 +3,8 @@
 <head>
     <title>Carleton Timetable Generator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">    
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
     <style>
         table {
             table-layout: fixed;
@@ -40,6 +41,9 @@
         #pageNav {
             margin-bottom: 15px;
         }
+        .online {
+            border: 5px solid black !important;
+        }
     </style>
 </head>
 <body>
@@ -66,7 +70,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class='form-row form-group align-items-center'>
+                    <div class='form-row form-group'>
                         <div class='col-2'>
                             <label for='course' class='form-label'>Course Code</label>
                         </div>
@@ -76,7 +80,14 @@
                                     <input type='text' class='form-control' name='course' placeholder='Course Code'>
                                 </div>
                                 <div class='col-2'>
-                                    <input type='button' style='width:100%' class='btn btn-primary add-course' value='Add Another'>
+                                    <button type='button' style='width:100%' class='btn btn-outline-danger del-course' value='Delete' disabled="true"><i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                <div class="col">
+                                    <button type='button' style='width:100%' class='btn btn-outline-primary add-course' value='Add Another'><i class="fa fa-plus-square"></i></button>
+                                </div>
+                                <div class="col-2">
                                 </div>
                             </div>
                         </div>
@@ -154,7 +165,9 @@
                             </ul>
                         </nav>
                     </div>
-                    <div class='col-2 align-middle text-left' id='totPages'>
+                    <div class='col-1 align-middle text-left' id='totPages'>
+                    </div>
+                    <div class='col-1'>
                         <button id="saveBtn" class="btn btn-outline-info" title="Save"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-save"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></button>
                     </div>
                     <div class='col'>
@@ -259,10 +272,9 @@ var codeRow = "<div class='row form-group'>\
                     <input type='text' class='form-control' name='course' placeholder='Course Code'>\
                 </div>\
                 <div class='col-2'>\
-                    <input type='button' style='width:100%' class='btn btn-primary add-course' value='Add Another'>\
+                    <button type='button' style='width:100%' class='btn btn-outline-danger del-course' value='Delete'><i class='fa fa-trash' aria-hidden='true'></i></button>\
                 </div>\
-            </div>"
-var delbtn = "<input type='button' style='width:100%' class='btn btn-danger del-course' value='Delete'>"
+            </div>";
 
 
 function loadTimetable(tBody) { // loads timetable template
@@ -294,35 +306,38 @@ function loadTable(table, currClasses, schedule) {
 
     for (const lecture of schedule) {
         if (lecture != null) {
-            let startTime = lecture.time.values[0];
-            let hour = Math.floor(startTime/100);
-            let mins = (startTime % 100 == 35) ? 0.5 : 0;
-            startTime = hour + mins;
-
-            let endTime = lecture.time.values[1];
-            hour = Math.floor(endTime/100);
-            mins = (endTime % 100 == 25) ? 0.5 : 1;
-            endTime = hour + mins;
-
             let colour = colours.pop();
+            currClasses.append(`<td class="text-center ${lecture.time ? "":"online"}" style="background-color: ${colour}" ${lecture.time ? "":'data-toggle="tooltip" data-placement="top" title="Recorded Lectures (CUOL)"'}><small class="text-white mb-0">${lecture.code + lecture.section}</small></td>`);
+            if (lecture.time) {
+                let startTime = lecture.time.values[0];
+                let hour = Math.floor(startTime/100);
+                let mins = (startTime % 100 == 35) ? 0.5 : 0;
+                startTime = hour + mins;
 
-            currClasses.append(`<td class="text-center" style="background-color: ${colour}"><small class="text-white mb-0">${lecture.code + lecture.section}</small></td>`);
+                let endTime = lecture.time.values[1];
+                hour = Math.floor(endTime/100);
+                mins = (endTime % 100 == 25) ? 0.5 : 1;
+                endTime = hour + mins;
 
-            let rowspan = (endTime-startTime)/0.5;
-            let startRow = table.find('[id="'+ startTime + '"]');
-            for (const day of lecture.days) {
-                for (let i = startTime+0.5; i < endTime; i+=0.5) {
-                    $(table.find('[id="'+ i + '"]').find('td')[day]).css('display', 'none');
+                let rowspan = (endTime-startTime)/0.5;
+                let startRow = table.find('[id="'+ startTime + '"]');
+                for (const day of lecture.days) {
+                    for (let i = startTime+0.5; i < endTime; i+=0.5) {
+                        $(table.find('[id="'+ i + '"]').find('td')[day]).css('display', 'none');
+                    }
+                    console.log($($(startRow).find('td')[day]));
+                    $($(startRow).find('td')[day])
+                    .attr('rowspan', rowspan)
+                    .attr('id', lecture.code+lecture.section)
+                    .css('background-color', colour)
+                    .append('<h6 style="display: inline;">' + lecture.code + lecture.section + '</h6>' + (lecture.building.abbrev ?  ' <p style="display: inline; font-size: 0.8rem;" data-placement="top" data-toggle="tooltip" title="' + lecture.building.name + '">(' + lecture.building.abbrev + ')</p>' : '') + '<p class="small">' + lecture.time.display + ' (' + lecture.crn + ')' + '</p><p class="small prof">'+ lecture.prof.name + (lecture.prof.ratings.overall_rating ? ' (' + lecture.prof.ratings.overall_rating + ')' : '') +'</p>');
                 }
-                console.log($($(startRow).find('td')[day]));
-                $($(startRow).find('td')[day])
-                .attr('rowspan', rowspan)
-                .attr('id', lecture.code+lecture.section)
-                .css('background-color', colour)
-                .append('<h6 style="display: inline;">' + lecture.code + lecture.section + '</h6>' + (lecture.building.abbrev ?  ' <p style="display: inline; font-size: 0.8rem;" data-placement="top" data-toggle="tooltip" title="' + lecture.building.name + '">(' + lecture.building.abbrev + ')</p>' : '') + '<p class="small">' + lecture.time.display + ' (' + lecture.crn + ')' + '</p><p class="small prof">'+ lecture.prof.name + (lecture.prof.ratings.overall_rating ? ' (' + lecture.prof.ratings.overall_rating + ')' : '') +'</p>');
             }
+            
         }
     }
+    $('[data-toggle="tooltip"]').tooltip();
+
 }
 
 function loadPage(pageNum) { // fills timetable wit courses
@@ -357,6 +372,13 @@ function updateSavedTables() {
 }
 
 const getSavedItems = () => JSON.parse(window.localStorage.getItem("saved"));
+const checkNumCodes = () => {
+    if ($("#codes").children().length > 2) {
+        document.querySelector("#codes").querySelector(".del-course").removeAttribute("disabled");
+    } else {
+        document.querySelector("#codes").querySelector(".del-course").setAttribute("disabled", true);
+    }
+}
 
 $(document).ready(function(e) {
     $(document).on("change", "#timetableSel", () => {
@@ -423,11 +445,17 @@ $(document).ready(function(e) {
             $('#term').val('');
         }
     });
+
     $(document).on('click', '.add-course', (e) => {
-        $(e.target).after(delbtn);
-        $(e.target).remove();
-        $('#codes').append(codeRow);
+        $("#codes").children().last().before(codeRow);
+        checkNumCodes();
     });
+
+    $(document).on('click', '.del-course', (e) => {
+        $(e.target).parents('.row').remove();
+        checkNumCodes();
+    });
+
     $(document).on('input', '#page', (e) => {
         count = $(e.target).val()-1
         if (count < 0) {
@@ -438,9 +466,7 @@ $(document).ready(function(e) {
         }
         loadPage(count);
     });
-    $(document).on('click', '.del-course', (e) => {
-        $(e.target).parents('.row').remove();
-    });
+    
     $(document).on('click', '.page-link', (e) => {
         count += $(e.target).attr('aria-label') == 'Next' ? 1 : -1;
         if (count < 0) {
@@ -479,7 +505,7 @@ $(document).ready(function(e) {
             },
             success: (result) => {
                 console.log(result);
-                $('#totPages').prepend('of ' + result.courses.length);
+                $('#totPages').text('of ' + result.courses.length);
                 timetables = result;
                 if (result['courses'].length === 0) {
                     alert('No Timetables Found');
