@@ -289,13 +289,14 @@ function loadTimetable(tBody) { // loads timetable template
 }
 
 function checkValidName() {
-    $("savedName").addClass("is-valid");
+    //$("savedName").addClass("is-valid");
+    const name = $("#savedName").val();
+
     const savedTables = JSON.parse(window.localStorage.getItem("saved"));
     if (savedTables && Array.isArray(savedTables)) {
-        const name = $("#savedName").val();
         return !savedTables.find(obj => obj.name === name);
     }
-    return true;
+    return !!name;
 }
 
 var timetables = null;
