@@ -20,7 +20,7 @@ def findCourses():
     print('getting courses...')
     return jsonify(courses=createTimetables(getCourses(courses, term, noEarly, noLate, openOnly, daysOff)))
 
-@app.route('/getTerms', methods=['POST'])
+@app.route('/getTerms', methods=['GET'])
 def getTerms():
     print('finding terms...')
     return jsonify(terms=findTerms())

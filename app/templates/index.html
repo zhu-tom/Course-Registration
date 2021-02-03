@@ -436,7 +436,7 @@ $(document).ready(function(e) {
 
     $.ajax({
         url: '/getTerms',
-        type: 'POST',
+        type: 'GET',
         contentType: 'application/json',
         success: (result) => {
             for (el of result.terms) {
@@ -489,7 +489,7 @@ $(document).ready(function(e) {
         courses = [];
         for (input of $('input[name=course]')) {
             if ($(input).val() != '') {
-                courses.push($(input).val().trim());
+                courses.push($(input).val().trim().split(" ").join(""));
             }
         }
 
