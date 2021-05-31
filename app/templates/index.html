@@ -381,7 +381,59 @@ const checkNumCodes = () => {
     }
 }
 
+const findCourses = (event) => {
+        if ($('#term').val() === null) {
+            $('#term').addClass('is-invalid');
+            return null;
+        } else {
+            $('#term').removeClass('is-invalid');
+        }
+
+        courses = [];
+        for (input of $('input[name=course]')) {
+            if ($(input).val() != '') {
+                courses.push($(input).val().trim().split(" ").join(""));
+            }
+        }
+
+        data = {courses: courses, term: $('#term').val(), noEarly: $('#noEarly').prop('checked'), noLate: $('#noLate').prop('checked'), openOnly: $('#openOnly').prop('checked'), daysOff: $('#daysOff').val()}
+        $.ajax({
+            url: '/findCourses',
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            beforeSend: () => {
+                $('#spinner').css('display', 'block');
+                $('#weekly').css('display', 'none');
+                $('#pageNav').css('display', 'none');
+            },
+            success: (result) => {
+                console.log(result);
+                $('#totPages').text('of ' + result.courses.length);
+                timetables = result;
+                if (result['courses'].length === 0) {
+                    alert('No Timetables Found');
+                    return;
+                }
+                loadPage(0);
+            },
+            complete: () => {
+                $('#spinner').css('display', 'none');
+                $('#weekly').css('display', 'table');
+                $('#pageNav').css('display', 'flex');
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+                alert(textStatus, errorThrown);
+            }
+        });
+    };
+
 $(document).ready(function(e) {
+    $(document).on("submit", "#courses", (event) => {
+        event.preventDefault();
+        findCourses(event);
+    });
+
     $(document).on("change", "#timetableSel", () => {
         loadSaved(parseInt($("#timetableSel").val()));
     });
@@ -478,52 +530,7 @@ $(document).ready(function(e) {
         }
         loadPage(count);
     });
-    $('#submit').on('click', (event) => {
-        if ($('#term').val() === null) {
-            $('#term').addClass('is-invalid');
-            return null;
-        } else {
-            $('#term').removeClass('is-invalid');
-        }
-
-        courses = [];
-        for (input of $('input[name=course]')) {
-            if ($(input).val() != '') {
-                courses.push($(input).val().trim().split(" ").join(""));
-            }
-        }
-
-        data = {courses: courses, term: $('#term').val(), noEarly: $('#noEarly').prop('checked'), noLate: $('#noLate').prop('checked'), openOnly: $('#openOnly').prop('checked'), daysOff: $('#daysOff').val()}
-        $.ajax({
-            url: '/findCourses',
-            type: 'POST',
-            contentType: "application/json",
-            data: JSON.stringify(data),
-            beforeSend: () => {
-                $('#spinner').css('display', 'block');
-                $('#weekly').css('display', 'none');
-                $('#pageNav').css('display', 'none');
-            },
-            success: (result) => {
-                console.log(result);
-                $('#totPages').text('of ' + result.courses.length);
-                timetables = result;
-                if (result['courses'].length === 0) {
-                    alert('No Timetables Found');
-                    return;
-                }
-                loadPage(0);
-            },
-            complete: () => {
-                $('#spinner').css('display', 'none');
-                $('#weekly').css('display', 'table');
-                $('#pageNav').css('display', 'flex');
-            },
-            error: (jqXHR, textStatus, errorThrown) => {
-                alert(textStatus, errorThrown);
-            }
-        });
-    });
+    $('#submit').on('click', findCourses);
     $('option').on('click', () => {
         if (($('#daysOff').val()).includes("none")) {
             $('#daysOff').val(["none"]);
