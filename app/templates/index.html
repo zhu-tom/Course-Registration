@@ -484,7 +484,7 @@ $(document).ready(function(e) {
 
     loadTimetable($("#timetable"));
 
-    $('#select-help').text(navigator.oscpu.includes("Mac OS") ? "\u2318 - Click to select multiple.": "Ctrl - Click to select multiple");
+    $('#select-help').text("Ctrl/Cmd - Click to select multiple");
 
     $.ajax({
         url: '/getTerms',
